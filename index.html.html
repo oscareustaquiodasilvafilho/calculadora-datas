@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calculadora — Datas</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 16px;
+      line-height: 1.4;
+    }
+    h1 { margin: 0 0 12px; font-size: 1.6rem; }
+    .card {
+      border: 1px solid rgba(120,120,120,.35);
+      border-radius: 14px;
+      padding: 16px;
+      margin: 14px 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    }
+    label { display:block; margin-top: 10px; font-weight: 600; }
+    input, button, select {
+      width: 100%;
+      margin-top: 6px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(120,120,120,.45);
+      font-size: 1rem;
+      background: transparent;
+    }
+    button { cursor: pointer; font-weight: 700; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    @media (max-width: 700px) { .grid, .grid3 { grid-template-columns: 1fr; } }
+    .out { font-size: 1rem; }
+    .kpi { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    @media (max-width: 560px) { .kpi { grid-template-columns: 1fr; } }
+    .pill { border: 1px solid rgba(120,120,120,.35); border-radius: 12px; padding: 10px 12px; }
+    .pill b { display:block; font-size: .95rem; }
+    .pill span { font-size: 1.15rem; font-weight: 800; }
+    .hint { font-size: .92rem; opacity: .8; margin-top: 8px; }
+    .error { color: #b00020; font-weight: 800; }
+    figure { margin: 0; }
+    img { width: 100%; border-radius: 14px; border: 1px solid rgba(120,120,120,.35); }
+  </style>
+</head>
+<body>
+  <h1>Calculadora: Datas</h1>
+
+  <div class="card">
+    <label for="mode">Modo</label>
+    <select id="mode">
+      <option value="diff">Diferença entre datas</option>
+      <option value="sum">Somar/Subtrair tempo em uma data</option>
+      <option value="convert">Conversor (calendário real): dias → anos/meses/semanas/dias</option>
+    </select>
+
+    <!-- DIFERENÇA -->
+    <div id="panel-diff" style="margin-top:12px;">
+      <div class="grid">
+        <div>
+          <label for="start">Data inicial</label>
+          <input id="start" type="date" />
+        </div>
+        <div>
+          <label for="end">Data final</label>
+          <input id="end" type="date" />
+        </div>
+      </div>
+      <button id="calcDiff" style="margin-top:12px;">Calcular diferença</button>
+      <div class="hint">
+        Exibe dias totais, semanas, meses aprox. (30 dias) e anos/meses/dias por calendário.
+      </div>
+    </div>
+
+    <!-- SOMA/SUBTRAÇÃO -->
+    <div id="panel-sum" style="margin-top:12px; display:none;">
+      <div class="grid">
+        <div>
+          <label for="baseDate">Data base</label>
+          <input id="baseDate" type="date" />
+        </div>
+        <div>
+          <label for="direction">Operação</label>
+          <select id="direction">
+            <option value="add">Somar</option>
+            <option value="sub">Subtrair</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid3" style="margin-top:12px;">
+        <div>
+          <label for="addYears">Anos</label>
+          <input id="addYears" type="number" value="0" />
+        </div>
+        <div>
+          <label for="addMonths">Meses</label>
+          <input id="addMonths" type="number" value="0" />
+        </div>
+        <div>
+          <label for="addWeeks">Semanas</label>
+          <input id="addWeeks" type="number" value="0" />
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top:12px;">
+        <div>
+          <label for="addDays">Dias</label>
+          <input id="addDays" type="number" value="0" />
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button id="calcSum">Calcular nova data</button>
+        </div>
+      </div>
+
+      <div class="hint">Anos/meses são de calendário. Semanas = 7 dias.</div>
+    </div>
+
+    <!-- CONVERSOR (CALENDÁRIO REAL) -->
+    <div id="panel-convert" style="margin-top:12px; display:none;">
+      <div class="grid">
+        <div>
+          <label for="daysToConvert">Quantidade de dias</label>
+          <input id="daysToConvert" type="number" min="0" value="0" />
+        </div>
+        <div>
+          <label for="convertBaseDate">Data base (para calendário real)</label>
+          <input id="convertBaseDate" type="date" />
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top:12px;">
+        <div>
+          <label for="convertDirection">Operação</label>
+          <select id="convertDirection">
+            <option value="add">Somar dias</option>
+            <option value="sub">Subtrair dias</option>
+          </select>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button id="calcConvert">Converter</button>
+        </div>
+      </div>
+
+      <div class="hint">
+        Aqui é “calendário real”: o resultado em anos/meses/dias respeita o calendário (28/29/30/31 dias).
+      </div>
+    </div>
+  </div>
+
+  <div class="card out" id="result">Escolha um modo e calcule.</div>
+
+  <script>
+    // ===== Helpers de data (UTC, evitando bugs de fuso/horário de verão) =====
+    function parseDateUTC(value) {
+      const [y, m, d] = value.split("-").map(Number);
+      return new Date(Date.UTC(y, m - 1, d));
+    }
+    function formatDateUTC(dateUTC) {
+      const y = dateUTC.getUTCFullYear();
+      const m = String(dateUTC.getUTCMonth() + 1).padStart(2, "0");
+      const d = String(dateUTC.getUTCDate()).padStart(2, "0");
+      return `${d}/${m}/${y}`;
+    }
+    function diffTotalDaysUTC(a, b) {
+      const msPerDay = 24 * 60 * 60 * 1000;
+      return Math.round((b.getTime() - a.getTime()) / msPerDay);
+    }
+    function lastDayOfMonthUTC(year, monthZeroBased) {
+      return new Date(Date.UTC(year, monthZeroBased + 1, 0)).getUTCDate();
+    }
+    function addMonthsClampedUTC(dateUTC, monthsToAdd) {
+      const y = dateUTC.getUTCFullYear();
+      const m = dateUTC.getUTCMonth();
+      const d = dateUTC.getUTCDate();
+
+      const targetMonthIndex = m + monthsToAdd;
+      const targetYear = y + Math.floor(targetMonthIndex / 12);
+      const targetMonth = ((targetMonthIndex % 12) + 12) % 12;
+
+      const maxDay = lastDayOfMonthUTC(targetYear, targetMonth);
+      const clampedDay = Math.min(d, maxDay);
+      return new Date(Date.UTC(targetYear, targetMonth, clampedDay));
+    }
+
+    // Diferença em calendário (anos, meses, dias) — sempre não-negativa (assume start <= end)
+    function diffCalendarYMDUTC(startUTC, endUTC) {
+      let cursor = new Date(startUTC.getTime());
+
+      // anos completos
+      let years = endUTC.getUTCFullYear() - cursor.getUTCFullYear();
+      let test = addMonthsClampedUTC(cursor, years * 12);
+      if (test > endUTC) {
+        years -= 1;
+        test = addMonthsClampedUTC(cursor, years * 12);
+      }
+      cursor = test;
+
+      // meses completos
+      let months = (endUTC.getUTCFullYear() - cursor.getUTCFullYear()) * 12
+                 + (endUTC.getUTCMonth() - cursor.getUTCMonth());
+      test = addMonthsClampedUTC(cursor, months);
+      if (test > endUTC) {
+        months -= 1;
+        test = addMonthsClampedUTC(cursor, months);
+      }
+      cursor = test;
+
+      // dias restantes
+      const days = diffTotalDaysUTC(cursor, endUTC);
+      return { years, months, days };
+    }
+
+    function setModeUI(mode) {
+      document.getElementById("panel-diff").style.display = (mode === "diff") ? "" : "none";
+      document.getElementById("panel-sum").style.display = (mode === "sum") ? "" : "none";
+      document.getElementById("panel-convert").style.display = (mode === "convert") ? "" : "none";
+      document.getElementById("result").innerHTML = "Escolha um modo e calcule.";
+    }
+
+    const modeEl = document.getElementById("mode");
+    modeEl.addEventListener("change", () => setModeUI(modeEl.value));
+    setModeUI(modeEl.value);
+
+    const resultEl = document.getElementById("result");
+
+    // ===== Diferença =====
+    document.getElementById("calcDiff").addEventListener("click", () => {
+      const startVal = document.getElementById("start").value;
+      const endVal = document.getElementById("end").value;
+
+      if (!startVal || !endVal) {
+        resultEl.innerHTML = `<span class="error">Selecione as duas datas.</span>`;
+        return;
+      }
+
+      const start = parseDateUTC(startVal);
+      const end = parseDateUTC(endVal);
+
+      const signedDays = diffTotalDaysUTC(start, end);
+      const absDays = Math.abs(signedDays);
+
+      const weeksDecimal = absDays / 7;
+      const weeksWhole = Math.floor(absDays / 7);
+      const daysRemainder = absDays % 7;
+
+      const monthsApproxDecimal = absDays / 30;
+      const monthsApproxWhole = Math.floor(absDays / 30);
+      const monthsApproxDaysRem = absDays % 30;
+
+      const startMin = (start <= end) ? start : end;
+      const endMax = (start <= end) ? end : start;
+
+      const ymd = diffCalendarYMDUTC(startMin, endMax);
+      const calendarTotalMonths = ymd.years * 12 + ymd.months;
+
+      const direction =
+        signedDays === 0 ? "Datas iguais"
+        : signedDays > 0 ? "Data final depois da inicial"
+        : signedDays < 0 ? "Data final antes da inicial" : "Datas iguais";
+
+      resultEl.innerHTML = `
+        <div><b>Direção:</b> ${direction}</div>
+        <div class="hint"><b>Período:</b> ${formatDateUTC(startMin)} → ${formatDateUTC(endMax)}</div>
+
+        <div class="kpi">
+          <div class="pill">
+            <b>Dias (total)</b>
+            <span>${absDays}</span>
+          </div>
+
+          <div class="pill">
+            <b>Semanas (total)</b>
+            <span>${weeksDecimal.toFixed(2)}</span>
+            <div class="hint">${weeksWhole} semana(s) + ${daysRemainder} dia(s)</div>
+          </div>
+
+          <div class="pill">
+            <b>Meses (aprox. total)</b>
+            <span>${monthsApproxDecimal.toFixed(2)}</span>
+            <div class="hint">${monthsApproxWhole} mês(es) + ${monthsApproxDaysRem} dia(s) (mês=30)</div>
+          </div>
+
+          <div class="pill">
+            <b>Anos (aprox. total)</b>
+            <span>${(absDays / 365).toFixed(2)}</span>
+            <div class="hint">Ano=365 dias</div>
+          </div>
+
+          <div class="pill" style="grid-column: 1 / -1;">
+            <b>Calendário real (anos/meses/dias)</b>
+            <span>${ymd.years} ano(s), ${ymd.months} mês(es), ${ymd.days} dia(s)</span>
+            <div class="hint">Total de meses por calendário: ${calendarTotalMonths} mês(es) + ${ymd.days} dia(s)</div>
+          </div>
+        </div>
+      `;
+    });
+
+    // ===== Soma/Subtração =====
+    document.getElementById("calcSum").addEventListener("click", () => {
+      const baseVal = document.getElementById("baseDate").value;
+      if (!baseVal) {
+        resultEl.innerHTML = `<span class="error">Selecione a data base.</span>`;
+        return;
+      }
+
+      const direction = document.getElementById("direction").value;
+      const sign = (direction === "sub") ? -1 : 1;
+
+      const years = Number(document.getElementById("addYears").value || 0) * sign;
+      const months = Number(document.getElementById("addMonths").value || 0) * sign;
+      const weeks = Number(document.getElementById("addWeeks").value || 0) * sign;
+      const days = Number(document.getElementById("addDays").value || 0) * sign;
+
+      const base = parseDateUTC(baseVal);
+
+      let outDate = addMonthsClampedUTC(base, years * 12 + months);
+      const totalDaysToAdd = (weeks * 7) + days;
+      outDate = new Date(outDate.getTime() + totalDaysToAdd * 24 * 60 * 60 * 1000);
+
+      resultEl.innerHTML = `
+        <div class="kpi">
+          <div class="pill">
+            <b>Data base</b>
+            <span>${formatDateUTC(base)}</span>
+          </div>
+          <div class="pill">
+            <b>Nova data</b>
+            <span>${formatDateUTC(outDate)}</span>
+          </div>
+          <div class="pill" style="grid-column:1/-1;">
+            <b>Aplicado</b>
+            <span>${direction === "sub" ? "Subtraído" : "Somado"}: ${Math.abs(years)} ano(s), ${Math.abs(months)} mês(es), ${Math.abs(weeks)} semana(s), ${Math.abs(days)} dia(s)</span>
+          </div>
+        </div>
+      `;
+    });
+
+    // ===== Conversor (calendário real) =====
+    document.getElementById("calcConvert").addEventListener("click", () => {
+      const rawDays = document.getElementById("daysToConvert").value;
+      const n = Number(rawDays);
+
+      if (!Number.isFinite(n) || n < 0) {
+        resultEl.innerHTML = `<span class="error">Digite uma quantidade de dias válida (0 ou maior).</span>`;
+        return;
+      }
+
+      const dir = document.getElementById("convertDirection").value;
+      const sign = (dir === "sub") ? -1 : 1;
+
+      const baseVal = document.getElementById("convertBaseDate").value;
+      let baseUTC;
+      if (baseVal) {
+        baseUTC = parseDateUTC(baseVal);
+      } else {
+        const now = new Date();
+        baseUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      }
+
+      const totalDays = Math.floor(n) * sign;
+      const endUTC = new Date(baseUTC.getTime() + totalDays * 24 * 60 * 60 * 1000);
+
+      const startMin = (baseUTC <= endUTC) ? baseUTC : endUTC;
+      const endMax = (baseUTC <= endUTC) ? endUTC : baseUTC;
+
+      const ymd = diffCalendarYMDUTC(startMin, endMax);
+
+      const weeks = Math.floor(ymd.days / 7);
+      const remDays = ymd.days % 7;
+
+      const directionText =
+        totalDays === 0 ? "Sem alteração"
+        : totalDays > 0 ? "Somando dias"
+        : "Subtraindo dias";
+
+      resultEl.innerHTML = `
+        <div><b>${directionText}:</b> ${Math.abs(totalDays)} dia(s)</div>
+
+        <div class="kpi">
+          <div class="pill">
+            <b>Data base</b>
+            <span>${formatDateUTC(baseUTC)}</span>
+          </div>
+          <div class="pill">
+            <b>Data final</b>
+            <span>${formatDateUTC(endUTC)}</span>
+          </div>
+
+          <div class="pill" style="grid-column:1/-1;">
+            <b>Equivalência (calendário real)</b>
+            <span>${ymd.years} ano(s), ${ymd.months} mês(es), ${weeks} semana(s), ${remDays} dia(s)</span>
+            <div class="hint">
+              Observação: semanas/dias vêm dos dias restantes após anos/meses de calendário.
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  </script>
+</body>
+</html>
+<!-- IMAGEM DA CAPIVARA -->
+<div class="card">
+  <figure style="text-align:center;">
+    <img
+      src="capivara.jpg"
+      alt="Capivara tranquila tomando cafe"
+      style="max-width:300px; width:100%;"
+    />
+    <figcaption>Capivara tranquila tomando café.</figcaption>
+  </figure>
+</div>
+<link rel="icon" href="capivara.ico" type="image/x-icon">
+
